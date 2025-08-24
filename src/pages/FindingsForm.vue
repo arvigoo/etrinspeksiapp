@@ -138,21 +138,21 @@ const compressFile = async (file) => {
 }
 
 // Ambil file input & generate preview
-const handleFiles = async (event) => {
-  const selectedFiles = Array.from(event.target.files)
+// const handleFiles = async (event) => {
+//   const selectedFiles = Array.from(event.target.files)
 
-  // Gabungkan dengan file yg sudah ada, lalu limit 4
-  const newFiles = [...files.value, ...selectedFiles].slice(0, 4)
+//   // Gabungkan dengan file yg sudah ada, lalu limit 4
+//   const newFiles = [...files.value, ...selectedFiles].slice(0, 4)
 
-  files.value = []
-  previews.value = []
+//   files.value = []
+//   previews.value = []
 
-  for (const f of newFiles) {
-    const compressed = await compressFile(f)
-    files.value.push(compressed)
-    previews.value.push(URL.createObjectURL(compressed))
-  }
-}
+//   for (const f of newFiles) {
+//     const compressed = await compressFile(f)
+//     files.value.push(compressed)
+//     previews.value.push(URL.createObjectURL(compressed))
+//   }
+// }
 
 // Ambil file input & generate preview
 const handleFiles = async (event) => {
