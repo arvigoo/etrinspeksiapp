@@ -1,0 +1,33 @@
+{
+  "name": "etrinspeksiapp",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@react-pdf/renderer": "^4.3.0",
+    "@supabase/supabase-js": "^2.55.0",
+    "browser-image-compression": "^2.0.2",
+    "chart.js": "^4.5.0",
+    "date-fns": "^4.1.0",
+    "dayjs": "^1.11.13",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.1",
+    "jspdf-autotable": "^5.0.2",
+    "pdfmake": "^0.2.20",
+    "pinia": "^3.0.3",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "vue": "^3.5.18",
+    "vue-chartjs": "^5.3.2",
+    "vue-router": "^4.5.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.1",
+    "vite": "^7.1.2"
+  }
+}
