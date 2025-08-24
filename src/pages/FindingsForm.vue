@@ -154,6 +154,37 @@ const handleFiles = async (event) => {
   }
 }
 
+// Ambil file input & generate preview
+const handleFiles = async (event) => {
+    const selectedFiles = Array.from(event.target.files);
+
+    const newFiles = [...files.value, ...selectedFiles].slice(0, 4);
+
+    previews.value.forEach(url => URL.revokeObjectURL(url));
+
+    files.value = [];
+    previews.value = [];
+    error.value = ''; // Hapus pesan error sebelumnya
+
+    for (const f of newFiles) {
+        try {
+            const compressed = await compressFile(f);
+            files.value.push(compressed);
+            previews.value.push(URL.createObjectURL(compressed));
+
+        } catch (e) {
+            error.value = `Gagal memproses foto: ${e.message}. Coba pilih ulang foto lain.`;
+            
+            break; 
+        }
+    }
+    event.target.value = '';
+    
+    if (files.value.length > 0 && files.value.length < newFiles.length) {
+         success.value = `Hanya ${files.value.length} foto yang berhasil ditambahkan. Batas maksimum 4 foto tercapai atau beberapa foto gagal diproses.`;
+    }
+};
+
 // Hapus foto dari preview
 const removePhoto = (index) => {
   files.value.splice(index, 1)
