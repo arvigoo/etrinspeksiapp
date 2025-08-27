@@ -12,7 +12,7 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    marginBottom: 5,
+    marginBottom: 20,
     alignItems: 'flex-start'
   },
   logoContainer: {
@@ -218,7 +218,17 @@ const styles = StyleSheet.create({
   }
 });
 
-// Helper untuk format tanggal Indonesia
+// Helper untuk format bullet points dari string dengan semicolon
+const formatBulletPoints = (text) => {
+  if (!text || text.trim() === '') return '-';
+  
+  const items = text.split(';').map(item => item.trim()).filter(item => item !== '');
+  
+  if (items.length === 0) return '-';
+  if (items.length === 1) return items[0];
+  
+  return items.map(item => `• ${item}`).join('\n');
+};
 const formatDateIndonesia = (dateStr) => {
   const months = [
     "Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -353,10 +363,10 @@ const InspectionGroup = ({ inspectionType, inspectionData, month }) => {
                 <PhotosGrid photos={finding.photos} />
               </View>
               <View style={[styles.tableCol, styles.tableColRisk]}>
-                <Text>{finding.hazard_risk || "-"}</Text>
+                <Text>{formatBulletPoints(finding.hazard_risk)}</Text>
               </View>
               <View style={[styles.tableCol, styles.tableColReco]}>
-                <Text>{finding.recommendation || "-"}</Text>
+                <Text>{formatBulletPoints(finding.recommendation)}</Text>
               </View>
             </View>
           ))
