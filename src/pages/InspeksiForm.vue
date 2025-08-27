@@ -47,7 +47,7 @@ import { useRouter } from 'vue-router'
 
 const inspectionDate = ref('')
 const inspectionType = ref('')
-const inspectionTypes = ['KONSTRUKSI', 'PERILAKU', 'INSIDEN', 'UTILITAS', 'PROTEKSI']
+const inspectionTypes = ['KONSTRUKSI', 'PRILAKU K3', 'INSIDEN', 'UTILITAS', 'PROTEKSI']
 const loading = ref(false)
 const error = ref('')
 const success = ref('')

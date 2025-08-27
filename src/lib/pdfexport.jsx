@@ -11,24 +11,77 @@ const styles = StyleSheet.create({
     fontSize: 9
   },
   header: {
-    flexDirection: 'column',
-    marginBottom: 20,
-    alignItems: 'center'
+    flexDirection: 'row',
+    marginBottom: 5,
+    alignItems: 'flex-start'
   },
   logoContainer: {
-    alignItems: 'center',
-    marginBottom: 10
+    width: '1%',
+    alignItems: 'flex-start',
+    paddingTop: 5
   },
   logo: {
     // Konversi cm ke points (1 cm = 28.35 points)
-    // Width: 17.68 cm = 501.4 points
-    // Height: 2.51 cm = 71.2 points
-    width: 501.4,
-    height: 71.2,
+    // Adjusted size for left alignment - smaller than original
+    width: 90,
+    height: 60,
     objectFit: 'contain'
   },
+  headerTextContainer: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingLeft: 0
+  },
+  headerLines: {
+    marginTop: 8,
+    paddingHorizontal: 30
+  },
+  thinLine: {
+    borderBottomWidth: 0.5,
+    borderBottomColor: '#000',
+    marginBottom: 2
+  },
+  thickLine: {
+    borderBottomWidth: 2,
+    borderBottomColor: '#000'
+  },
+  headerLine1: {
+    fontSize: 10,
+    marginBottom: 2,
+    textAlign: 'center',
+    fontFamily: 'Times-Roman'
+  },
+  headerLine2: {
+    fontSize: 10,
+    marginBottom: 2,
+    textAlign: 'center',
+    fontFamily: 'Times-Roman'
+  },
+  headerLine3: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 3,
+    textAlign: 'center',
+    fontFamily: 'Times-Bold'
+  },
+  headerLine4: {
+    fontSize: 8,
+    marginBottom: 2,
+    textAlign: 'center',
+    fontFamily: 'Times-Roman'
+  },
+  headerLine5: {
+    fontSize: 8,
+    textAlign: 'center',
+    fontFamily: 'Times-Roman'
+  },
+  underlineText: {
+    textDecoration: 'underline'
+  },
   titleContainer: {
-    alignItems: 'center'
+    alignItems: 'center',
+    marginTop: 10
   },
   titleMain: {
     fontSize: 14,
@@ -91,12 +144,12 @@ const styles = StyleSheet.create({
   tableColNo: { 
     width: '5%',
     textAlign: 'center',
-    justifyContent: 'center'
+    justifyContent: 'flex-start'
   },
   tableColDate: { 
     width: '12%',
     textAlign: 'center',
-    justifyContent: 'center'
+    justifyContent: 'flex-start'
   },
   tableColLocation: { 
     width: '15%',
@@ -220,17 +273,37 @@ const InspectionGroup = ({ inspectionType, inspectionData, month }) => {
     <Page size="A4" orientation="landscape" style={styles.page}>
       {/* Header */}
       <View style={styles.header}>
+        {/* Logo Section */}
         <View style={styles.logoContainer}>
           <Image style={styles.logo} src="/logo.png" />
         </View>
-        <View style={styles.titleContainer}>
-          <Text style={styles.titleMain}>LAPORAN TEMUAN K3RS</Text>
-          <Text style={styles.titleSub}>{inspectionType.toUpperCase()}</Text>
-          <Text style={styles.titleHospital}>RUMAH SAKIT PARU SUMATERA BARAT</Text>
-          <Text style={styles.titleMonth}>
-            {month && month.trim() !== '' ? month.toUpperCase() : 'BULAN TIDAK TERSEDIA'}
+        
+        {/* Header Text Section */}
+        <View style={styles.headerTextContainer}>
+          <Text style={styles.headerLine1}>PEMERINTAH PROVINSI SUMATERA BARAT</Text>
+          <Text style={styles.headerLine2}>DINAS KESEHATAN</Text>
+          <Text style={styles.headerLine3}>RUMAH SAKIT PARU SUMATERA BARAT</Text>
+          <Text style={styles.headerLine4}>Jln. Dr. M. Jamil No.110 Lubuk Alung Telp ( 0751) 96013 96688 fax.96013</Text>
+          <Text style={styles.headerLine5}>
+            <Text style={styles.underlineText}>Email.RSK.paru@gmail.com</Text> <Text style={styles.underlineText}>Website: rsparu.sumbarprov.go.id</Text>
           </Text>
         </View>
+      </View>
+
+      {/* Header Lines */}
+      <View style={styles.headerLines}>
+        <View style={styles.thinLine}></View>
+        <View style={styles.thickLine}></View>
+      </View>
+
+      {/* Title Section */}
+      <View style={styles.titleContainer}>
+        <Text style={styles.titleMain}>LAPORAN TEMUAN K3RS</Text>
+        <Text style={styles.titleSub}>{inspectionType.toUpperCase()}</Text>
+        <Text style={styles.titleHospital}>RUMAH SAKIT PARU SUMATERA BARAT</Text>
+        <Text style={styles.titleMonth}>
+          {month && month.trim() !== '' ? month.toUpperCase() : 'BULAN TIDAK TERSEDIA'}
+        </Text>
       </View>
 
       {/* Table */}
@@ -291,21 +364,24 @@ const InspectionGroup = ({ inspectionType, inspectionData, month }) => {
       </View>
 
       {/* Signature */}
-      <View style={styles.signature} wrap={false}>
-        <View style={styles.signatureSection}>
-          <Text>Komite K3RS</Text>
-          <Text>An Ketua</Text>
-          <Text style={styles.signatureName}>dr. Lusi Agustini Arda, Sp.P</Text>
-          <Text style={styles.signatureNip}>NIP. 19840812 201101 2 008</Text>
+        <View style={styles.signature} wrap={false}>
+          <View style={styles.signatureSection}>
+            <Text>    </Text>
+            <Text>Komite K3RS</Text>
+            <Text>Ketua</Text>
+            <View style={{ height: 40 }}></View> {/* Jarak antara jabatan dan nama */}
+            <Text style={[styles.signatureName, { marginBottom: 5 }]}>dr. Lusi Agustini Arda, Sp.P</Text>
+            <Text style={styles.signatureNip}>NIP. 19840812 201101 2 008</Text>
+          </View>
+          <View style={styles.signatureSection}>
+            <Text>Lubuk Alung, {new Date().getDate()} {["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][new Date().getMonth()]} {new Date().getFullYear()}</Text>
+            <Text>Petugas Pengawas</Text>
+            <Text>Sekretaris I Komite K3RS</Text>
+            <View style={{ height: 40 }}></View> {/* Jarak antara jabatan dan nama */}
+            <Text style={[styles.signatureName, { marginBottom: 5 }]}>Etri Putri, S.K.M</Text>
+            <Text style={styles.signatureNip}>NIP. 20020424202504 2 008</Text>
+          </View>
         </View>
-        <View style={styles.signatureSection}>
-          <Text>Lubuk Alung, {new Date().getDate()} {["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][new Date().getMonth()]} {new Date().getFullYear()}</Text>
-          <Text>Petugas Pengawas</Text>
-          <Text>An Sekretaris I Komite K3RS</Text>
-          <Text style={styles.signatureName}>Etri Putri, S.K.M</Text>
-          <Text style={styles.signatureNip}>NIP. 20020424202504 2 008</Text>
-        </View>
-      </View>
     </Page>
   );
 };
