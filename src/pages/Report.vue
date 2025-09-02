@@ -27,17 +27,38 @@
       <div class="action-buttons">
         <button @click="fetchReport" :disabled="loading" class="btn btn-primary">
           <span v-if="loading">⏳ Loading...</span>
-          <span v-else">🔍 Tampilkan Data</span>
+          <span v-else>🔍 Tampilkan Data</span>
         </button>
         
         <button 
           @click="downloadPDF" 
-          :disabled="!reportData.length || isGeneratingPDF" 
+          :disabled="!reportData.length || isGeneratingPDF || isGeneratingXLSX" 
           class="btn btn-success"
         >
           <span v-if="isGeneratingPDF">⏳ Generating PDF...</span>
           <span v-else>📄 Download PDF</span>
         </button>
+
+        <!-- Dropdown untuk pilihan Excel -->
+        <div class="excel-dropdown">
+          <button 
+            @click="toggleExcelDropdown"
+            :disabled="!reportData.length || isGeneratingPDF || isGeneratingXLSX" 
+            class="btn btn-excel"
+          >
+            <span v-if="isGeneratingXLSX">⏳ Generating Excel...</span>
+            <span v-else>📊 Download Excel ▼</span>
+          </button>
+          
+          <div v-if="showExcelDropdown" class="dropdown-menu">
+            <button @click="downloadExcelWithImages" class="dropdown-item">
+              📊 Excel dengan Gambar
+            </button>
+            <button @click="downloadExcelSimple" class="dropdown-item">
+              📋 Excel Sederhana
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -54,6 +75,14 @@
     <div v-if="isGeneratingPDF" class="status-message generating">
       <div class="spinner"></div>
       <p>🔄 Generating PDF report... Mohon tunggu sebentar.</p>
+    </div>
+
+    <div v-if="isGeneratingXLSX" class="status-message generating">
+      <div class="spinner"></div>
+      <p>📊 Generating Excel report... Mohon tunggu sebentar.</p>
+      <div class="generating-details">
+        <small>{{ excelGenerationStatus }}</small>
+      </div>
     </div>
 
     <!-- Data Summary -->
@@ -128,12 +157,14 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { supabase } from '../lib/supabase'
 import dayjs from 'dayjs'
-import { generateReportPDF } from '../lib/pdfexport' // Update import path
+import { generateReportPDF } from '../lib/pdfexport'
+// Import fungsi Excel generator
+import { generateReportExcel, generateReportExcelSimple } from '../lib/xlsxexport'
 
-const inspectionTypes = ['KONSTRUKSI','PERILAKU','INSIDEN','UTILITAS','PROTEKSI']
+const inspectionTypes = ['KONSTRUKSI','PRILAKU K3','INSIDEN','UTILITAS','PROTEKSI']
 const selectedType = ref('')
 const startDate = ref('')
 const endDate = ref('')
@@ -142,6 +173,9 @@ const reportData = ref([])
 const loading = ref(false)
 const error = ref('')
 const isGeneratingPDF = ref(false)
+const isGeneratingXLSX = ref(false)
+const excelGenerationStatus = ref('')
+const showExcelDropdown = ref(false)
 
 // Computed properties untuk statistik
 const totalFindings = computed(() => {
@@ -187,6 +221,46 @@ const getRowNumber = (inspectionIndex, findingIndex) => {
   return count + findingIndex
 }
 
+// Helper untuk generate month string
+const generateMonthString = () => {
+  let monthString = ''
+  if (startDate.value && endDate.value) {
+    const start = dayjs(startDate.value)
+    const end = dayjs(endDate.value)
+    if (start.format('YYYY-MM') === end.format('YYYY-MM')) {
+      monthString = start.format('MMMM YYYY').toUpperCase()
+    } else {
+      monthString = `${start.format('MMM')} - ${end.format('MMM YYYY')}`.toUpperCase()
+    }
+  } else if (startDate.value) {
+    monthString = dayjs(startDate.value).format('MMMM YYYY').toUpperCase()
+  } else if (endDate.value) {
+    monthString = dayjs(endDate.value).format('MMMM YYYY').toUpperCase()
+  }
+  return monthString
+}
+
+// Toggle dropdown Excel
+const toggleExcelDropdown = () => {
+  showExcelDropdown.value = !showExcelDropdown.value
+}
+
+// Close dropdown when clicking outside
+const closeDropdown = (event) => {
+  if (!event.target.closest('.excel-dropdown')) {
+    showExcelDropdown.value = false
+  }
+}
+
+// Lifecycle hooks
+onMounted(() => {
+  document.addEventListener('click', closeDropdown)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', closeDropdown)
+})
+
 const fetchReport = async () => {
   loading.value = true
   error.value = ''
@@ -230,8 +304,8 @@ const fetchReport = async () => {
         const photos = await Promise.all((finding.finding_photos || []).map(async (photo) => {
           try {
             const { data: signed } = await supabase.storage
-              .from('inspection-photos') // Sesuaikan dengan bucket name Anda
-              .createSignedUrl(photo.storage_path, 60 * 60) // Valid 1 jam
+              .from('inspection-photos')
+              .createSignedUrl(photo.storage_path, 60 * 60)
             
             return { 
               ...photo, 
@@ -269,21 +343,7 @@ const downloadPDF = async () => {
   try {
     isGeneratingPDF.value = true
     
-    // Prepare month string untuk header PDF
-    let monthString = ''
-    if (startDate.value && endDate.value) {
-      const start = dayjs(startDate.value)
-      const end = dayjs(endDate.value)
-      if (start.format('YYYY-MM') === end.format('YYYY-MM')) {
-        monthString = start.format('MMMM YYYY')
-      } else {
-        monthString = `${start.format('MMM')} - ${end.format('MMM YYYY')}`
-      }
-    } else if (startDate.value) {
-      monthString = dayjs(startDate.value).format('MMMM YYYY')
-    } else if (endDate.value) {
-      monthString = dayjs(endDate.value).format('MMMM YYYY')
-    }
+    const monthString = generateMonthString()
     
     console.log('Generating PDF with data:', reportData.value)
     
@@ -291,7 +351,6 @@ const downloadPDF = async () => {
       month: monthString 
     })
     
-    // Show success message (optional, bisa pakai toast library)
     alert('PDF berhasil diunduh!')
     
   } catch (err) {
@@ -300,6 +359,72 @@ const downloadPDF = async () => {
     alert('Gagal generate PDF: ' + err.message)
   } finally {
     isGeneratingPDF.value = false
+  }
+}
+
+// Fungsi download Excel dengan gambar
+const downloadExcelWithImages = async () => {
+  if (!reportData.value.length) {
+    alert('Tidak ada data untuk diunduh!')
+    return
+  }
+  
+  try {
+    isGeneratingXLSX.value = true
+    showExcelDropdown.value = false
+    excelGenerationStatus.value = 'Menyiapkan data...'
+    
+    const monthString = generateMonthString()
+    
+    console.log('Generating Excel with images:', reportData.value)
+    
+    excelGenerationStatus.value = 'Memproses gambar...'
+    
+    await generateReportExcel(reportData.value, { 
+      month: monthString 
+    })
+    
+    alert('Excel dengan gambar berhasil diunduh!')
+    
+  } catch (err) {
+    console.error('Error generating Excel with images:', err)
+    error.value = 'Gagal generate Excel: ' + err.message
+    alert('Gagal generate Excel: ' + err.message)
+  } finally {
+    isGeneratingXLSX.value = false
+    excelGenerationStatus.value = ''
+  }
+}
+
+// Fungsi download Excel sederhana
+const downloadExcelSimple = async () => {
+  if (!reportData.value.length) {
+    alert('Tidak ada data untuk diunduh!')
+    return
+  }
+  
+  try {
+    isGeneratingXLSX.value = true
+    showExcelDropdown.value = false
+    excelGenerationStatus.value = 'Membuat spreadsheet...'
+    
+    const monthString = generateMonthString()
+    
+    console.log('Generating simple Excel:', reportData.value)
+    
+    await generateReportExcelSimple(reportData.value, { 
+      month: monthString 
+    })
+    
+    alert('Excel sederhana berhasil diunduh!')
+    
+  } catch (err) {
+    console.error('Error generating simple Excel:', err)
+    error.value = 'Gagal generate Excel: ' + err.message
+    alert('Gagal generate Excel: ' + err.message)
+  } finally {
+    isGeneratingXLSX.value = false
+    excelGenerationStatus.value = ''
   }
 }
 </script>
@@ -408,6 +533,54 @@ const downloadPDF = async () => {
   background: #1e7e34;
 }
 
+.btn-excel {
+  background: #217346;
+  color: white;
+}
+
+.btn-excel:hover:not(:disabled) {
+  background: #1a5e37;
+}
+
+/* Excel Dropdown Styles */
+.excel-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  z-index: 1000;
+  min-width: 200px;
+  overflow: hidden;
+}
+
+.dropdown-item {
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: white;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 14px;
+  display: block;
+}
+
+.dropdown-item:hover {
+  background: #f8f9fa;
+}
+
+.dropdown-item:not(:last-child) {
+  border-bottom: 1px solid #e9ecef;
+}
+
 .status-message {
   text-align: center;
   padding: 30px;
@@ -428,6 +601,15 @@ const downloadPDF = async () => {
 .status-message.generating {
   background: #e6f7ff;
   color: #cc0058;
+}
+
+.generating-details {
+  margin-top: 10px;
+}
+
+.generating-details small {
+  color: #666;
+  font-style: italic;
 }
 
 .spinner {
@@ -583,10 +765,18 @@ const downloadPDF = async () => {
   .action-buttons {
     margin-left: 0;
     justify-content: center;
+    flex-wrap: wrap;
   }
   
   .summary-stats {
     flex-direction: column;
+  }
+  
+  .dropdown-menu {
+    position: fixed;
+    right: 10px;
+    left: 10px;
+    width: auto;
   }
 }
 </style>
