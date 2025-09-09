@@ -149,11 +149,12 @@ const styles = StyleSheet.create({
   },
   tableColNo: { width: '5%', textAlign: 'center', justifyContent: 'flex-start' },
   tableColDate: { width: '12%', textAlign: 'center', justifyContent: 'flex-start' },
-  tableColLocation: { width: '15%', justifyContent: 'flex-start' },
+  tableColLocation: { width: '10%', justifyContent: 'flex-start' },
   tableColFinding: { width: '20%', justifyContent: 'flex-start' },
   tableColPhoto: { width: '20%', justifyContent: 'center', alignItems: 'center' },
   tableColRisk: { width: '13%', justifyContent: 'flex-start' },
   tableColReco: { width: '15%', justifyContent: 'flex-start' },
+  tableColNotes: { width: '16%', justifyContent: 'flex-start' },
   photosContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -278,6 +279,7 @@ const InspectionGroup = ({ inspectionType, inspectionDate, inspectionData, month
           <View style={[styles.tableColHeader, styles.tableColPhoto]}><Text>DOKUMENTASI</Text></View>
           <View style={[styles.tableColHeader, styles.tableColRisk]}><Text>BAHAYA/RISIKO</Text></View>
           <View style={[styles.tableColHeader, styles.tableColReco]}><Text>REKOMENDASI</Text></View>
+          <View style={[styles.tableColHeader, styles.tableColNotes]}><Text>KETERANGAN</Text></View>
         </View>
 
         {inspectionData.map((inspection) =>
@@ -290,6 +292,7 @@ const InspectionGroup = ({ inspectionType, inspectionDate, inspectionData, month
               <View style={[styles.tableCol, styles.tableColPhoto]}><PhotosGrid photos={finding.photos} /></View>
               <View style={[styles.tableCol, styles.tableColRisk]}><Text>{formatBulletPoints(finding.hazard_risk)}</Text></View>
               <View style={[styles.tableCol, styles.tableColReco]}><Text>{formatBulletPoints(finding.recommendation)}</Text></View>
+              <View style={[styles.tableCol, styles.tableColNotes]}><Text>{finding.notes || "-"}</Text></View>
             </View>
           ))
         )}

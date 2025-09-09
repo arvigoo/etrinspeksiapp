@@ -53,6 +53,18 @@
         />
       </div>
 
+      <!-- Keterangan -->
+      <div class="form-group">
+        <label for="notes">Keterangan</label>
+        <textarea
+          id="notes"
+          v-model="notes"
+          class="form-textarea"
+          rows="3"
+          placeholder="Catatan tambahan, misalnya kondisi saat ditemukan, frekuensi, dll."
+        ></textarea>
+      </div>
+
       <!-- Upload Foto -->
       <div class="form-group">
         <label>Foto Temuan (maksimal 4)</label>
@@ -121,6 +133,7 @@ const location = ref('')
 const finding = ref('')
 const hazardRisk = ref('')
 const recommendation = ref('')
+const notes = ref('')
 const files = ref([])
 const previews = ref([])
 
@@ -212,6 +225,7 @@ const submitFinding = async () => {
           finding: finding.value,
           hazard_risk: hazardRisk.value,
           recommendation: recommendation.value,
+          notes: notes.value,
         },
       ])
       .select()
@@ -246,6 +260,7 @@ const submitFinding = async () => {
     finding.value = ''
     hazardRisk.value = ''
     recommendation.value = ''
+    notes.value = ''
     files.value = []
     previews.value = []
 

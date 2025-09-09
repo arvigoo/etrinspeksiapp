@@ -41,6 +41,11 @@
             <p class="detail-label">Rekomendasi:</p>
             <p class="detail-content recommendation">{{ f.recommendation || 'Belum ada rekomendasi' }}</p>
           </div>
+
+          <div class="detail-group">
+            <p class="detail-label">Keterangan:</p>
+            <p class="detail-content notes">{{ f.notes || 'Tidak ada keterangan' }}</p>
+          </div>
         </div>
 
         <div class="card-footer" v-if="f.photos && f.photos.length">
@@ -88,6 +93,11 @@
           <div class="form-group">
             <label>Rekomendasi:</label>
             <textarea v-model="editForm.recommendation" class="form-textarea"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Keterangan:</label>
+            <textarea v-model="editForm.notes" class="form-textarea" placeholder="Catatan tambahan..."></textarea>
           </div>
           <div class="form-group">
             <label>Tambah Foto Baru:</label>
@@ -157,7 +167,8 @@ const editForm = ref({
   location: '',
   finding: '',
   hazard_risk: '',
-  recommendation: ''
+  recommendation: '',
+  notes: '' 
 })
 const newPhotos = ref([])
 const photoInput = ref(null)
@@ -174,7 +185,7 @@ const fetchFindings = async () => {
   try {
     const { data, error: supError } = await supabase
       .from('findings')
-      .select(`id, location, finding, hazard_risk, recommendation, finding_photos(*)`)
+      .select(`id, location, finding, hazard_risk, recommendation, notes, finding_photos(*)`)
       .eq('inspection_id', inspectionId)
       .order('created_at', { ascending: true })
 
@@ -215,7 +226,8 @@ const editFinding = (finding) => {
     location: finding.location || '',
     finding: finding.finding || '',
     hazard_risk: finding.hazard_risk || '',
-    recommendation: finding.recommendation || ''
+    recommendation: finding.recommendation || '',
+    notes: finding.notes || ''
   }
   newPhotos.value = []
   showEditModal.value = true
@@ -228,7 +240,8 @@ const closeEditModal = () => {
     location: '',
     finding: '',
     hazard_risk: '',
-    recommendation: ''
+    recommendation: '',
+    notes: ''
   }
   newPhotos.value = []
   if (photoInput.value) {
@@ -269,7 +282,8 @@ const saveFinding = async () => {
         location: editForm.value.location,
         finding: editForm.value.finding,
         hazard_risk: editForm.value.hazard_risk,
-        recommendation: editForm.value.recommendation
+        recommendation: editForm.value.recommendation,
+        notes: editForm.value.notes
       })
       .eq('id', editForm.value.id)
 
