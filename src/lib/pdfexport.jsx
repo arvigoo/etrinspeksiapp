@@ -2,6 +2,7 @@ import React from 'react';
 import { Document, Page, Text, View, Image, StyleSheet, pdf } from '@react-pdf/renderer';
 
 // Styles untuk PDF
+// ... [STYLES LENGKAP TIDAK BERUBAH] ...
 const styles = StyleSheet.create({
   page: {
     flexDirection: 'column',
@@ -188,6 +189,8 @@ const styles = StyleSheet.create({
   signatureNip: { fontSize: 9, marginTop: 2, fontFamily: 'Times-Roman' }
 });
 
+
+// ... [HELPER FUNCTIONS TIDAK BERUBAH] ...
 // Helper untuk format bullet points dari string dengan semicolon
 const formatBulletPoints = (text) => {
   if (!text || text.trim() === '') return '-';
@@ -239,8 +242,14 @@ const PhotosGrid = ({ photos }) => {
 };
 
 // Component untuk satu grup inspeksi
-const InspectionGroup = ({ inspectionType, inspectionDate, inspectionData, month }) => {
+// [MODIFIKASI] Terima prop `signatory`
+const InspectionGroup = ({ inspectionType, inspectionDate, inspectionData, month, signatory }) => {
   let rowNumber = 1;
+
+  // [BARU] Siapkan nama dan NIP penanda tangan, dengan fallback jika data tidak ada
+  const signerName = signatory?.name || 'dr. Lusi Agustini Arda, Sp.P';
+  const signerNip = signatory?.nip || 'NIP. 19840812 201101 2 008';
+
   return (
     <Page size={{ width: 1000, height: 700 }} orientation="landscape" style={styles.page}>
       {/* Header */}
@@ -305,8 +314,9 @@ const InspectionGroup = ({ inspectionType, inspectionDate, inspectionData, month
           <Text>Komite K3RS</Text>
           <Text>Ketua</Text>
           <View style={{ height: 40 }}></View>
-          <Text style={[styles.signatureName, { marginBottom: 5 }]}>dr. Lusi Agustini Arda, Sp.P</Text>
-          <Text style={styles.signatureNip}>NIP. 19840812 201101 2 008</Text>
+          {/* [MODIFIKASI] Tampilkan nama dan NIP secara dinamis */}
+          <Text style={[styles.signatureName, { marginBottom: 5 }]}>{signerName}</Text>
+          <Text style={styles.signatureNip}>{signerNip}</Text>
         </View>
         <View style={styles.signatureSection}>
           <Text>Lubuk Alung, {new Date().getDate()} {["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"][new Date().getMonth()]} {new Date().getFullYear()}</Text>
@@ -334,7 +344,8 @@ const groupByTypeAndDate = (inspections) => {
 };
 
 // Main PDF Document
-const ReportPDF = ({ inspections, month }) => {
+// [MODIFIKASI] Terima prop `signatory`
+const ReportPDF = ({ inspections, month, signatory }) => {
   let displayMonth = month || 'BULAN TIDAK TERSEDIA';
   const grouped = groupByTypeAndDate(inspections);
   return (
@@ -347,6 +358,7 @@ const ReportPDF = ({ inspections, month }) => {
             inspectionDate={inspectionDate}
             inspectionData={inspectionData}
             month={displayMonth}
+            signatory={signatory} // [MODIFIKASI] Teruskan prop signatory
           />
         ))
       )}
@@ -357,8 +369,12 @@ const ReportPDF = ({ inspections, month }) => {
 // Export function untuk Vue
 export async function generateReportPDF(inspections, options = {}) {
   try {
-    const { month = "" } = options;
-    const doc = <ReportPDF inspections={inspections} month={month} />;
+    // [MODIFIKASI] Ekstrak `signatory` dari options
+    const { month = "", signatory = null } = options;
+    
+    // [MODIFIKASI] Teruskan `signatory` ke komponen ReportPDF
+    const doc = <ReportPDF inspections={inspections} month={month} signatory={signatory} />;
+    
     const blob = await pdf(doc).toBlob();
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');

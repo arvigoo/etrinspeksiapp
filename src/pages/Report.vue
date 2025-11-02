@@ -24,6 +24,14 @@
         <input type="date" v-model="endDate" class="filter-input">
       </div>
 
+      <div class="filter-group">
+        <label>Tanda Tangan Ketua:</label>
+        <select v-model="selectedSignatoryId" class="filter-select">
+          <option v-for="signer in signatories" :key="signer.id" :value="signer.id">
+            {{ signer.name }}
+          </option>
+        </select>
+      </div>
       <div class="action-buttons">
         <button @click="fetchReport" :disabled="loading" class="btn btn-primary">
           <span v-if="loading">⏳ Loading...</span>
@@ -39,7 +47,6 @@
           <span v-else>📄 Download PDF</span>
         </button>
 
-        <!-- Dropdown untuk pilihan Excel -->
         <div class="excel-dropdown">
           <button 
             @click="toggleExcelDropdown"
@@ -62,7 +69,6 @@
       </div>
     </div>
 
-    <!-- Loading dan Error States -->
     <div v-if="loading" class="status-message loading">
       <div class="spinner"></div>
       <p>Memuat data inspeksi...</p>
@@ -85,7 +91,6 @@
       </div>
     </div>
 
-    <!-- Data Summary -->
     <div v-if="reportData.length && !loading" class="data-summary">
       <div class="summary-card">
         <h3>📊 Ringkasan Data</h3>
@@ -110,7 +115,6 @@
       </div>
     </div>
 
-    <!-- Data Preview Table -->
     <div v-if="reportData.length && !loading" class="data-preview">
       <h3>📋 Preview Data</h3>
       <div class="table-container">
@@ -147,7 +151,6 @@
       </div>
     </div>
 
-    <!-- No Data Message -->
     <div v-if="!reportData.length && !loading && !error" class="no-data">
       <div class="no-data-icon">📄</div>
       <h3>Belum ada data</h3>
@@ -168,6 +171,20 @@ const inspectionTypes = ['KONSTRUKSI','PRILAKU K3','INSIDEN','UTILITAS','PROTEKS
 const selectedType = ref('')
 const startDate = ref('')
 const endDate = ref('')
+
+// [BARU] Data untuk penanda tangan
+const signatories = ref([
+  { id: 1, name: 'dr. Lusi Agustini Arda, Sp.P', nip: 'NIP. 19840812 201101 2 008' },
+  { id: 2, name: 'Nama Dokter Lain, Sp.A', nip: 'NIP. 12345678 901234 5 001' },
+  { id: 3, name: 'Contoh Ketua Lain, S.K.M', nip: 'NIP. 98765432 109876 5 002' },
+])
+// [BARU] Menyimpan ID penanda tangan yang dipilih, default ke ID 1
+const selectedSignatoryId = ref(1)
+
+// [BARU] Computed property untuk mendapatkan detail penanda tangan yang dipilih
+const signatoryDetails = computed(() => {
+  return signatories.value.find(s => s.id === selectedSignatoryId.value)
+})
 
 const reportData = ref([])
 const loading = ref(false)
@@ -345,10 +362,16 @@ const downloadPDF = async () => {
     
     const monthString = generateMonthString()
     
-    console.log('Generating PDF with data:', reportData.value)
+    // [MODIFIKASI] Ambil data penanda tangan yang dipilih
+    const signatory = signatoryDetails.value
     
+    console.log('Generating PDF with data:', reportData.value)
+    console.log('With signatory:', signatory)
+    
+    // [MODIFIKASI] Kirim data penanda tangan ke fungsi generateReportPDF
     await generateReportPDF(reportData.value, { 
-      month: monthString 
+      month: monthString,
+      signatory: signatory // Kirim objek penanda tangan
     })
     
     alert('PDF berhasil diunduh!')
@@ -362,6 +385,7 @@ const downloadPDF = async () => {
   }
 }
 
+// ... sisa script (fungsi excel) tidak berubah ...
 // Fungsi download Excel dengan gambar
 const downloadExcelWithImages = async () => {
   if (!reportData.value.length) {
@@ -418,7 +442,8 @@ const downloadExcelSimple = async () => {
     
     alert('Excel sederhana berhasil diunduh!')
     
-  } catch (err) {
+  } catch (err)
+ {
     console.error('Error generating simple Excel:', err)
     error.value = 'Gagal generate Excel: ' + err.message
     alert('Gagal generate Excel: ' + err.message)
@@ -430,6 +455,7 @@ const downloadExcelSimple = async () => {
 </script>
 
 <style scoped>
+/* ... CSS tidak berubah ... */
 .report-container {
   max-width: 1200px;
   margin: 0 auto;
