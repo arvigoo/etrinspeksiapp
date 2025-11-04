@@ -306,27 +306,6 @@ const InspectionGroup = ({ inspectionType, inspectionDate, inspectionData, month
           ))
         )}
       </View>
-
-      {/* Signature */}
-      <View style={styles.signature}>
-        <View style={styles.signatureSection}>
-          <Text> </Text>
-          <Text>Komite K3RS</Text>
-          <Text>Ketua</Text>
-          <View style={{ height: 40 }}></View>
-          {/* [MODIFIKASI] Tampilkan nama dan NIP secara dinamis */}
-          <Text style={[styles.signatureName, { marginBottom: 5 }]}>{signerName}</Text>
-          <Text style={styles.signatureNip}>{signerNip}</Text>
-        </View>
-        <View style={styles.signatureSection}>
-          <Text>Lubuk Alung, {new Date().getDate()} {["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"][new Date().getMonth()]} {new Date().getFullYear()}</Text>
-          <Text>Petugas Pengawas</Text>
-          <Text>Sekretaris I Komite K3RS</Text>
-          <View style={{ height: 40 }}></View>
-          <Text style={[styles.signatureName, { marginBottom: 5 }]}>Etri Putri, S.K.M</Text>
-          <Text style={styles.signatureNip}>NIP. 20020424202504 2 008</Text>
-        </View>
-      </View>
     </Page>
   );
 };
