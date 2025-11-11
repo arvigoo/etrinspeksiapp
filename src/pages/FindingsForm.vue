@@ -12,8 +12,12 @@
           v-model="location"
           required
           class="form-input"
-          placeholder="Contoh: Area Produksi Lantai 3"
+          list="location-list" 
+          placeholder="Ketik atau pilih lokasi..."
         />
+        <datalist id="location-list">
+          <option v-for="loc in locationOptions" :key="loc" :value="loc"></option>
+        </datalist>
       </div>
 
       <!-- Deskripsi -->
@@ -123,6 +127,26 @@ import { supabase } from '../lib/supabase'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../store/auth'
 import imageCompression from 'browser-image-compression'
+
+const rawLocations = [
+  'Laboratorium Mikrobiologi', 'Unit KeslingK3', 'Laboratorium Patologi Klinik',
+  'Instalasi Radiologi', 'Poliklinik', 'Manajemen', 'Rawat Inap Paru',
+  'Rawat Inap Penyakit Dalam', 'Rawat Inap Anak', 'Instalasi Farmasi',
+  'Instalasi Gawat Darurat (IGD)', 'HCU', 'Instalasi Rekam Medis',
+  'Instalasi Gizi', 'Ruang IPSRS', 'Aula', 'Kamar Jenazah',
+  'Ruang Gas Medis', 'Laundry', 'TPS', 'Area IPAL', 'Parkir', 'Lainnya'
+]
+
+const otherOption = 'Lainnya'
+// 1. Saring semua lokasi KECUALI 'Lainnya'
+// 2. Urutkan sisanya (A-Z) menggunakan perbandingan lokal
+const sortedLocations = rawLocations
+  .filter(loc => loc !== otherOption)
+  .sort((a, b) => a.localeCompare(b))
+
+// 3. Tambahkan 'Lainnya' kembali di posisi paling akhir
+const locationOptions = [...sortedLocations, otherOption]
+// --------------------------------------------------
 
 const route = useRoute()
 const router = useRouter()

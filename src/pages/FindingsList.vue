@@ -52,11 +52,12 @@
           <p class="photo-title"><span class="icon">📸</span> Bukti Foto:</p>
           <div class="photos-gallery">
             <div v-for="p in f.photos" :key="p.id" class="photo-container">
-              <img
-                :src="p.signedUrl || ''"
-                alt="Foto Temuan"
-                class="finding-photo"
-              />
+                <img
+                  :src="p.signedUrl || ''"
+                  alt="Foto Temuan"
+                  class="finding-photo"
+                  @click="openPhotoModal(p.signedUrl)" 
+                />
               <button @click="deletePhoto(p.id, f.id)" class="delete-photo-btn">
                 <span class="icon">❌</span>
               </button>
@@ -80,7 +81,16 @@
         <div class="modal-body">
           <div class="form-group">
             <label>Lokasi:</label>
-            <input v-model="editForm.location" type="text" class="form-input" />
+            <input 
+              v-model="editForm.location" 
+              type="text" 
+              class="form-input"
+              list="location-list" 
+              placeholder="Ketik atau pilih lokasi..."
+            />
+            <datalist id="location-list">
+              <option v-for="loc in locationOptions" :key="loc" :value="loc"></option>
+            </datalist>
           </div>
           <div class="form-group">
             <label>Deskripsi:</label>
@@ -144,6 +154,25 @@
       </div>
     </div>
   </div>
+
+  <div v-if="showPhotoModal" class="modal-overlay photo-modal-overlay" @click="closePhotoModal">
+  <button @click="closePhotoModal" class="close-btn photo-modal-close-btn">&times;</button>
+  
+  <div class="photo-modal-content" @click.stop>
+    <div class="photo-modal-body">
+      <img :src="selectedPhotoUrl" alt="Foto Temuan (Besar)" class="photo-modal-image" />
+    </div>
+    <div class="photo-modal-footer">
+      <a 
+        :href="selectedPhotoUrl" 
+        download
+        class="btn btn-download"
+      >
+        <span class="icon">⬇️</span> Unduh Foto
+      </a>
+    </div>
+  </div>
+</div>
 </template>
 
 <script setup>
@@ -151,6 +180,22 @@ import { ref, onMounted } from 'vue'
 import { supabase } from '../lib/supabase'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '../store/auth'
+
+const rawLocations = [
+  'Laboratorium Mikrobiologi', 'Unit KeslingK3', 'Laboratorium Patologi Klinik',
+  'Instalasi Radiologi', 'Poliklinik', 'Manajemen', 'Rawat Inap Paru',
+  'Rawat Inap Penyakit Dalam', 'Rawat Inap Anak', 'Instalasi Farmasi',
+  'Instalasi Gawat Darurat (IGD)', 'HCU', 'Instalasi Rekam Medis',
+  'Instalasi Gizi', 'Ruang IPSRS', 'Aula', 'Kamar Jenazah',
+  'Ruang Gas Medis', 'Laundry', 'TPS', 'Area IPAL', 'Parkir', 'Lainnya'
+]
+
+const otherOption = 'Lainnya'
+const sortedLocations = rawLocations
+  .filter(loc => loc !== otherOption)
+  .sort((a, b) => a.localeCompare(b))
+
+const locationOptions = [...sortedLocations, otherOption]
 
 const route = useRoute()
 const auth = useAuthStore()
@@ -178,6 +223,23 @@ const saving = ref(false)
 const showDeleteModal = ref(false)
 const findingToDelete = ref(null)
 const deleting = ref(false)
+
+const showPhotoModal = ref(false)
+const selectedPhotoUrl = ref('')
+
+// BARU: Fungsi untuk membuka modal foto
+const openPhotoModal = (url) => {
+  if (url) {
+    selectedPhotoUrl.value = url
+    showPhotoModal.value = true
+  }
+}
+
+// BARU: Fungsi untuk menutup modal foto
+const closePhotoModal = () => {
+  showPhotoModal.value = false
+  selectedPhotoUrl.value = ''
+}
 
 // Ambil temuan + generate signed URL untuk setiap foto
 const fetchFindings = async () => {
@@ -618,12 +680,14 @@ onMounted(fetchFindings)
   height: auto;
   border-radius: 6px;
   object-fit: cover;
-  transition: transform 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s; /* MODIFIKASI: tambah transisi */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer; /* BARU: Tambah cursor pointer */
 }
 
 .finding-photo:hover {
-  transform: scale(1.02);
+  transform: scale(1.03); /* MODIFIKASI: Sedikit lebih besar */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* BARU: Shadow saat hover */
 }
 
 .delete-photo-btn {
@@ -862,6 +926,81 @@ onMounted(fetchFindings)
   background: #c82333;
 }
 
+.btn-download {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 16px;
+  font-size: 1rem;
+  text-decoration: none; /* Agar link terlihat seperti tombol */
+}
+
+.btn-download:hover {
+  background-color: #0069d9;
+}
+
+/* --- BARU: Photo Modal Styles --- */
+
+.photo-modal-overlay {
+  background: rgba(0, 0, 0, 0.85); /* Lebih gelap untuk fokus foto */
+  z-index: 1010; /* Pastikan di atas modal lain jika tumpang tindih */
+}
+
+.photo-modal-close-btn {
+  /* Gunakan style .close-btn yang ada, tapi posisikan */
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  font-size: 28px;
+  z-index: 1011; /* Di atas konten modal foto */
+}
+.photo-modal-close-btn:hover {
+  background: white;
+  color: #000;
+}
+
+.photo-modal-content {
+  background: none; /* Transparan */
+  box-shadow: none;
+  width: 100%;
+  height: 100%;
+  max-width: 95vw;
+  max-height: 95vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  padding: 0; /* Hapus padding default dari .modal-content */
+}
+
+.photo-modal-body {
+  padding: 0;
+  flex: 1; /* Ambil ruang sebanyak mungkin */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 0; /* Perbaikan untuk flexbox */
+  width: 100%;
+}
+
+.photo-modal-image {
+  max-width: 100%;
+  max-height: 100%; /* Memastikan gambar pas di dalam body */
+  object-fit: contain; /* Jaga rasio aspek */
+  border-radius: 8px;
+}
+
+.photo-modal-footer {
+  padding: 15px 0 0 0; /* Jarak di atas tombol */
+  text-align: center;
+  flex-shrink: 0; /* Jangan biarkan footer menyusut */
+}
+
 /* --- Responsive --- */
 
 @media (max-width: 600px) {
@@ -885,6 +1024,18 @@ onMounted(fetchFindings)
 
   .modal-footer .btn {
     width: 100%;
+  }
+
+  .photo-modal-close-btn {
+    top: 10px;
+    right: 10px;
+    width: 32px;
+    height: 32px;
+  }
+
+  .photo-modal-content {
+    max-width: 100vw;
+    max-height: 100vh;
   }
 }
 </style>

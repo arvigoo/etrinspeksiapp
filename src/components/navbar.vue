@@ -3,7 +3,7 @@
     <div class="navbar-container">
       <div class="navbar-brand">
         <router-link to="/dashboard">
-          <span class="brand-text">ETRINSPEKSI</span>
+          <span class="brand-text">ENSPEKSI</span>
           <span class="brand-icon"></span>
         </router-link>
       </div>
